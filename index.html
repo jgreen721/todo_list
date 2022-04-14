@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- displays site properly based on user's device -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./images/favicon-32x32.png"
+    />
+
+    <title>Frontend Mentor | Todo app</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
+  </head>
+  <body>
+    <div class="todo-app">
+      <div class="header"></div>
+
+      <div class="todo-body night">
+        <div class="todo-parent">
+          <div class="todo-container">
+            <div class="flex between top">
+              <h1 class="h1-todo">TODO</h1>
+              <img class="toggle-img" src="images/icon-sun.svg" alt="sun-img" />
+            </div>
+
+            <div class="add-input-row input">
+              <div class="circle-div"></div>
+              <!-- <div class="input-div"></div> -->
+              <input autofocus type="text" class="input-div" />
+            </div>
+
+            <div class="task-list-container"></div>
+            <div class="flex evenly options-row bottom">
+              <h5><span class="total"></span> items left</h5>
+              <ul class="filter-list">
+                <li class="filter-btn">All</li>
+                <li class="filter-btn">Active</li>
+                <li class="filter-btn">Completed</li>
+              </ul>
+              <h5 class="filter-btn">Clear Completed</h5>
+            </div>
+          </div>
+          <p class="mt-25">Drag and drop to reorder list</p>
+        </div>
+
+        <div class="test-drop">DROP HERE ASSHOLE</div>
+
+        <div class="attribution">
+          Challenge by
+          <a href="https://www.frontendmentor.io?ref=challenge" target="_blank"
+            >Frontend Mentor</a
+          >. Coded by <a href="#">Justin</a>.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var toggleImg = document.querySelector(".toggle-img");
+      var todoApp = document.querySelector(".todo-parent");
+      var todoBody = document.querySelector(".todo-body");
+      var inputRow = document.querySelector(".add-input-row");
+      var inputDiv = document.querySelector(".input-div");
+      var taskContainer = document.querySelector(".task-list-container");
+      var attribution = document.querySelector(".attribution");
+      var header = document.querySelector(".header");
+      var totalEl = document.querySelector(".total");
+      var filterBtns = document.querySelectorAll(".filter-btn");
+
+      let folder = "bg-desktop";
+      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+      //dark mode toggle
+      toggleImg.onclick = (e) => {
+        console.log("fx fired");
+        var circles = document.querySelectorAll(".circle-div");
+
+        if (document.querySelector(".todo-body").classList.contains("night")) {
+          e.target.setAttribute("src", "./images/icon-moon.svg");
+          document.querySelector(".todo-body").style.background = "white";
+          document.querySelector(".todo-body").classList.remove("night");
+          inputRow.style.background = "white";
+          inputDiv.style.background = "white";
+          inputDiv.style.color = "black";
+          attribution.style.color = "black";
+          header.style.backgroundImage = `url(./images/${folder}-light.jpg)`;
+
+          todoApp.style.color = "black";
+          circles.forEach(
+            (c) => (c.style.border = "1px solid hsl(235, 24%, 19%)")
+          );
+          document.querySelectorAll(".task-item").forEach((t) => {
+            t.style.color = "black";
+            t.style.backgroundColor = "white";
+          });
+        } else {
+          e.target.setAttribute("src", "./images/icon-sun.svg");
+          document.querySelector(".todo-body").style.background =
+            "hsl(235, 21%, 11%)";
+          document.querySelector(".todo-body").classList.add("night");
+          todoApp.style.color = "white";
+          inputRow.style.background = "hsl(235, 24%, 19%)";
+          inputDiv.style.background = "hsl(235, 24%, 19%)";
+          attribution.style.color = "white";
+          header.style.backgroundImage = `url(./images/${folder}-dark.jpg)`;
+          circles.forEach(
+            (circle) => (circle.style.border = "1px solid white")
+          );
+          document.querySelectorAll(".task-item").forEach((t) => {
+            t.style.color = "white";
+            t.style.backgroundColor = "hsl(235, 24%, 19%)";
+          });
+        }
+      };
+
+      // responsiveness
+      onresize = (e) => {
+        console.log(e.target);
+        let width = e.target.innerWidth;
+
+        if (width < 350) {
+          folder = "bg-mobile";
+          header.style.height = "25%";
+          todoBody.style.height = "75%";
+          if (
+            document.querySelector(".todo-body").classList.contains("night")
+          ) {
+            header.style.backgroundImage = `url(./images/${folder}-dark.jpg)`;
+          } else {
+            header.style.backgroundImage = `url(./images/${folder}-light.jpg)`;
+          }
+        } else {
+          folder = "bg-desktop";
+          header.style.height = "35%";
+          todoBody.style.height = "65%";
+
+          if (
+            document.querySelector(".todo-body").classList.contains("night")
+          ) {
+            header.style.backgroundImage = `url(./images/${folder}-dark.jpg)`;
+          } else {
+            header.style.backgroundImage = `url(./images/${folder}-light.jpg)`;
+          }
+        }
+      };
+
+      onkeydown = (e) => {
+        if (e.key === "Enter") {
+          addItem();
+        }
+      };
+
+      function addItem() {
+        let task = inputDiv.value;
+        if (!task.length) alert("invalid task!");
+        console.log("Task", task);
+        tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        console.log(tasks);
+
+        let newTask = { id: tasks.length + 1, completed: false, task };
+
+        tasks.push(newTask);
+        createCard(newTask);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        inputDiv.value = "";
+
+        let num = totalEl.textContent;
+        num = parseInt(num);
+        num++;
+        totalEl.innerHTML = num;
+      }
+
+      function createCard(task) {
+        let taskItem = document.createElement("div");
+        taskItem.className = "task-item";
+        taskItem.setAttribute("data-completed", task.completed);
+        taskItem.setAttribute("data-id", task.id);
+        taskItem.draggable = true;
+        // taskItem.ondragenter = (e) => dragEnter(e);
+        // taskItem.ondragleave = (e) => dragLeave(e);
+        taskItem.ondragover = (e) => {
+          e.preventDefault();
+          dragOver(e);
+        };
+        taskItem.ondragstart = (e) => dragStart(e);
+        taskItem.addEventListener("drop", (e) => onDragDrop(e));
+
+        // taskItem.ondragend = (e) => dragStop(e);
+        taskItem.innerHTML = `<div class="flex start"><div class="circle-div"></div><h3 class="task-h3">${task.task}</h3></div><span class="delete">&times;</span>`;
+        taskContainer.append(taskItem);
+        taskItem.querySelector(".delete").onclick = (e) =>
+          removeItem(e, task.id);
+        taskItem.querySelector(".circle-div").onclick = (e) =>
+          completeItem(e, task.id);
+        task.completed == "true" &&
+          taskItem.querySelector(".circle-div").classList.add("completed");
+      }
+
+      let taskRef;
+      let switchRef;
+
+      function dragStart(e) {
+        // console.log("drag start!!");
+        console.log("STart");
+        taskRef = e.target;
+      }
+
+      // function dragEnter(e) {
+      //   // console.log("drag enter!!");
+      //   switchRef = e.target;
+      // }
+
+      function dragOver(e) {
+        e.preventDefault();
+        console.log("drag over!!!");
+        // switchRef = e.target;
+      }
+
+      // function dragLeave(e) {
+      //   // console.log("drag leave!!");
+      // }
+
+      function onDragDrop(e) {
+        let targ = e.target;
+        // console.log("DROOOOP");
+        // e.target.innerHTML = "";
+        let temp = {
+          html: taskRef.innerHTML,
+          completed: taskRef.getAttribute("data-completed"),
+          id: taskRef.getAttribute("data-id"),
+        };
+        if (!e.target.classList.contains("task-item")) {
+          console.log("NOT Parent?", e.target);
+          targ = e.target.closest(".task-item");
+        }
+        //   console.log(
+        //     "Switching to parent",
+        //     e.target.closest(".task-item"),
+        //     e.target
+        //   );
+        // }
+        console.log("Targ", targ);
+        let temp2 = {
+          html: targ.innerHTML,
+          completed: targ.getAttribute("data-completed"),
+          id: targ.getAttribute("data-id"),
+        };
+
+        e.target.innerHTML = "";
+        taskRef.innerHTML = "";
+
+        targ.setAttribute("data-completed", temp.completed);
+        targ.setAttribute("data-id", temp.id);
+        taskRef.setAttribute("data-completed", temp2.completed);
+        taskRef.setAttribute("data-id", temp2.id);
+        console.log(temp, temp2);
+        taskRef.innerHTML = temp2.html;
+        targ.innerHTML = temp.html;
+
+        taskRef.querySelector(".delete").onclick = (e) =>
+          removeItem(e, temp2.id);
+        taskRef.querySelector(".circle-div").onclick = (e) =>
+          completeItem(e, temp2.id);
+        temp2.completed === true &&
+          taskRef.querySelector(".circle-div").classList.add("completed");
+
+        console.log(e.target);
+        targ.querySelector(".delete").onclick = (e) => removeItem(e, temp.id);
+        targ.querySelector(".circle-div").onclick = (e) =>
+          completeItem(e, temp.id);
+        temp.completed === true &&
+          targ.querySelector(".circle-div").classList.add("completed");
+
+        let newTasks = [];
+        taskContainer.querySelectorAll(".task-item").forEach((t, idx) => {
+          let task = {
+            id: idx + 1,
+            completed: t.getAttribute("data-completed"),
+            task: t.querySelector(".task-h3").textContent,
+          };
+          // console.log("Task", task);
+          newTasks.push(task);
+          localStorage.setItem("tasks", JSON.stringify(newTasks));
+        });
+      }
+
+      function dragStop(e) {
+        console.log("drag stop!!");
+        // console.log("Start", taskRef);
+        // console.log("Switch", switchRef);
+        // if (taskRef && switchRef) {
+        //   swap(
+        //     taskRef.getAttribute("data-id"),
+        //     switchRef.getAttribute("data-id")
+        //   );
+        //   console.log("end", taskRef.innerHTML);
+        //   // e.target.innerHTML = taskRef.innerHTML;
+        // }
+      }
+
+      function swap(a, b) {
+        console.log("Swap fired");
+        console.log("ID's", a, b);
+        let idxOne, idxTwo;
+        console.log(tasks);
+        tasks.forEach((t, idx) => {
+          if (t.id == a) {
+            console.log("MatchOne");
+            idxOne = idx;
+          }
+          if (t.id == b) {
+            console.log("MatchTwo");
+
+            idxTwo = idx;
+          }
+        });
+        console.log("IDXs", idxOne, idxTwo);
+        let temp = tasks[idxOne];
+        tasks[idxOne] = tasks[idxTwo];
+        tasks[idxTwo] = temp;
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+
+        taskContainer.innerHTML = "";
+        tasks.forEach((t) => createCard(t));
+      }
+
+      function dragOver(e) {
+        console.log("drag over!!");
+      }
+
+      document.querySelector(".test-drop").ondragover = (e) => {
+        e.preventDefault();
+        console.log("OVER");
+      };
+
+      document.querySelector(".test-drop").ondrop = (e) => {
+        console.log("DROP");
+        e.target.append(taskRef);
+      };
+
+      function removeItem(e, id) {
+        console.log(e.target, id);
+        let tasks = JSON.parse(localStorage.getItem("tasks"));
+        let filteredTasks = tasks.filter((t) => t.id != id);
+        localStorage.setItem("tasks", JSON.stringify(filteredTasks));
+        let completed = filteredTasks.filter((t) => !t.completed);
+        totalEl.innerHTML = completed.length;
+
+        // taskContainer.removeChild(e.target);
+        e.target.closest(".task-item").remove();
+      }
+
+      function completeItem(e, id) {
+        let newTasks;
+        console.log("ID", id, e.target);
+        let tasks = JSON.parse(localStorage.getItem("tasks"));
+
+        //   console.log(e.target.nextElementSibling);
+        if (!e.target.classList.contains("completed")) {
+          e.target.classList.add("completed");
+          e.target.closest(".task-item").setAttribute("data-completed", true);
+          e.target.nextElementSibling.classList.add("cross-out");
+          // newTasks = taskContainer.map((t) =>
+          //   t.id === id ? { ...t, completed: true } : t
+          // );
+          let newTasks = [];
+          taskContainer.querySelectorAll(".task-item").forEach((t, idx) => {
+            let task = {
+              id: idx + 1,
+              completed: t.getAttribute("data-completed"),
+              task: t.querySelector(".task-h3").textContent,
+            };
+            console.log("Task", task);
+            newTasks.push(task);
+            localStorage.setItem("tasks", JSON.stringify(newTasks));
+          });
+          // localStorage.setItem("tasks", JSON.stringify(newTasks));
+
+          let completed = newTasks.filter((t) => t.completed != "true");
+          console.log("uncompleted", completed);
+          totalEl.innerHTML = completed.length;
+        } else {
+          e.target.classList.remove("completed");
+          e.target.nextElementSibling.classList.remove("cross-out");
+          e.target.closest(".task-item").setAttribute("data-completed", false);
+
+          let newTasks = [];
+          taskContainer.querySelectorAll(".task-item").forEach((t, idx) => {
+            let task = {
+              id: idx + 1,
+              completed: t.getAttribute("data-completed"),
+              task: t.querySelector(".task-h3").textContent,
+            };
+            console.log("Task", task);
+            newTasks.push(task);
+            localStorage.setItem("tasks", JSON.stringify(newTasks));
+          });
+
+          // newTasks = tasks.map((t) =>
+          //   t.id === id ? { ...t, completed: false } : t
+          // );
+          // localStorage.setItem("tasks", JSON.stringify(newTasks));
+          // let completed = newTasks.filter((t) => !t.completed);
+          // console.log("uncompleted2222", completed);
+
+          // totalEl.innerHTML = completed.length;
+
+          let completed = newTasks.filter((t) => t.completed != "true");
+          console.log("uncompleted", completed);
+          totalEl.innerHTML = completed.length;
+        }
+      }
+
+      filterBtns.forEach((btn) => {
+        btn.onclick = (e) => filterTasks(e);
+      });
+
+      function filterTasks(e) {
+        let filterOption = e.target.textContent;
+        console.log("Filter:", filterOption);
+
+        let tasks = JSON.parse(localStorage.getItem("tasks"));
+        console.log(tasks);
+        switch (filterOption) {
+          case "All":
+            taskContainer.innerHTML = "";
+            tasks.forEach((t) => createCard(t));
+            break;
+
+          case "Active":
+            taskContainer.innerHTML = "";
+            tasks.forEach((t) => {
+              if (!t.completed == "false") createCard(t);
+            });
+            break;
+
+          case "Completed":
+            taskContainer.innerHTML = "";
+            tasks.forEach((t) => {
+              if (t.completed == "true") createCard(t);
+            });
+            break;
+
+          default:
+            taskContainer.innerHTML = "";
+
+            tasks = tasks.filter((t) => t.completed != "true");
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+            tasks.forEach((t) => createCard(t));
+        }
+      }
+
+      function init() {
+        console.log("INIT", tasks);
+        if (tasks.length) {
+          tasks.forEach((t) => {
+            createCard(t);
+          });
+        }
+        let completed = tasks.filter((t) => t.completed != "true");
+        totalEl.innerHTML = completed.length;
+      }
+
+      init();
+    </script>
+  </body>
+</html>
