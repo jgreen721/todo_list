@@ -434,7 +434,7 @@
           case "Active":
             taskContainer.innerHTML = "";
             tasks.forEach((t) => {
-              if (!t.completed == "false") createCard(t);
+              if (t.completed == "false") createCard(t);
             });
             break;
 
