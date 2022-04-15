@@ -95,6 +95,8 @@
           );
           document.querySelectorAll(".task-item").forEach((t) => {
             t.style.color = "black";
+            t.style.border = "1px solid black";
+
             t.style.backgroundColor = "white";
           });
         } else {
@@ -112,6 +114,7 @@
           );
           document.querySelectorAll(".task-item").forEach((t) => {
             t.style.color = "white";
+
             t.style.backgroundColor = "hsl(235, 24%, 19%)";
           });
         }
@@ -191,6 +194,14 @@
 
         // taskItem.ondragend = (e) => dragStop(e);
         taskItem.innerHTML = `<div class="flex start"><div class="circle-div"></div><h3 class="task-h3">${task.task}</h3></div><span class="delete">&times;</span>`;
+        if (!document.querySelector(".todo-body").classList.contains("night")) {
+          taskItem.style.color = "black";
+          taskItem.style.border = "1px solid black";
+          taskItem.style.backgroundColor = "white";
+          taskItem.querySelector(".circle-div").style.border =
+            "1px solid black";
+        }
+
         taskContainer.append(taskItem);
         taskItem.querySelector(".delete").onclick = (e) =>
           removeItem(e, task.id);
